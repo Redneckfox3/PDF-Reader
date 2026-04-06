@@ -17,7 +17,7 @@ def extract_data_with_ai(pdf_file, api_key):
             
             # Gebruik de stabiele modelnaam
             model_id = "gemini-2.5-pro"
-            
+            #model_id ="gemini-3-flash-preview"
             # Lees de PDF in als bytes
             pdf_bytes = pdf_file.read()
             pdf_file.seek(0) 
@@ -55,6 +55,9 @@ def extract_data_with_ai(pdf_file, api_key):
             },
             "hooglast_activatie": "string",
             "laaglast_activatie": "string",
+            "gasblok_afbeelding": "string",
+            "bediening_afbeelding": "string",
+            "display_afbeelding": "string",
             "gastype_data": [
               {
                 "naam": "string",
@@ -131,12 +134,7 @@ def main():
     
     # API Key invoer in de zijbalk
     st.sidebar.header("Configuratie")
-    # WAARSCHUWING: Het hardcoderen van API-sleutels is NIET aanbevolen voor productieomgevingen
-    # of wanneer je de code deelt, vanwege beveiligingsrisico's.
-    # Voor lokale ontwikkeling of persoonlijke projecten kan het handig zijn.
-    # Vervang "JOUW_API_KEY_HIER" door je daadwerkelijke Gemini API-sleutel.
-    api_key = "AIzaSyDsHdp6JvN2ltFgo71tuj6ABE7WOMFX2YQ" 
-    st.sidebar.write("API Key is hardcoded in `main.py`.")
+    api_key = st.sidebar.text_input("Gemini API Key", type="password", help="Voer hier je Google Gemini API key in.")
     
     uploaded_file = st.file_uploader("Upload de handleiding (PDF)", type="pdf")
 
@@ -144,6 +142,9 @@ def main():
         st.success(f"Bestand '{uploaded_file.name}' succesvol geladen.")
         
         if st.button("Start AI Analyse"):
+            if not api_key:
+                st.error("Voer a.u.b. eerst een API-sleutel in de zijbalk in.")
+                return
             with st.spinner("Gemini analyseert het document... dit kan 10-20 seconden duren."):
                 result = extract_data_with_ai(uploaded_file, api_key)
                 
