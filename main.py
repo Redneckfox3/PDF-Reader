@@ -24,7 +24,7 @@ def extract_data_with_ai(pdf_file, api_key):
 
             prompt = """
             Analyseer deze installatiehandleiding en extraheer de technische informatie exact in de volgende JSON structuur.
-        Focus op: Merk, Model, Contactinformatie, Apparaattype (CV/WP/Hybride), Storingen, Afstel-protocol, Warmtepomp-specificaties, Testmodus, Bedrijfstoestanden/Statuscodes en afbeeldingen van componenten.
+        Focus op: Merk, Model, Contactinformatie, Apparaattype (CV/WP/Hybride), Storingen, Afstel-protocol, Warmtepomp-specificaties, Testmodus, Bedrijfstoestanden/Statuscodes, afbeeldingen van componenten en de onderdelenlijst.
         
         Belangrijk:
         - Bepaal het type apparaat: Als het een CV-ketel is, gebruik "CV-Ketel". Als het een warmtepomp of hybride systeem is, gebruik "Warmtepomp".
@@ -36,6 +36,7 @@ def extract_data_with_ai(pdf_file, api_key):
         - Extractie details: Geef de naam van het gastype inclusief beschrijving (bijv. "G25.3 (Aardgas NL)"). Geef O2/CO2 weer als een bereik [min, max]. Zoek ook de gasluchtverhouding (p-verschildruk) en geef deze weer in zowel Pascal (Pa) als millibar (mbar). Als er maar één eenheid in de tekst staat, reken de andere dan om (1 mbar = 100 Pa). Zoek ook de correctiefactoren/offsets (factor, offset_O2, offset_CO2). Sorteer de `gastype_data` lijst zo dat het gastype voor Nederland (G25.3, G25, 2E of 2K) ALTIJD als eerste staat.
         - Controleer of het toestel beschikt over automatische kalibratie van het gasblok (bijv. elektronische gas-luchtkoppeling). Beschrijf dit kort indien aanwezig en hoe de automatsche calbratie te activeren.
         - Voor Warmtepompen en Hybride: Extraheer vermogen (kW), COP, SCOP, koudemiddel type (bijv. R32, R290) en geluidsvermogen.
+        - Onderdelen: Als er een onderdelenlijst of lijst met reserveonderdelen aanwezig is, extraheer deze dan volledig met het artikelnummer en de omschrijving.
         - Afbeeldingen: Identificeer waar afbeeldingen van het gasblok, de bediening (knoppen/knoppenpaneel) en het display zich bevinden. Geef een korte beschrijving of het paginanummer.
         - Extraheer de volledige storingslijst en parameters met fabriekswaarden.
         
@@ -46,6 +47,8 @@ def extract_data_with_ai(pdf_file, api_key):
           "merk": "string",
           "model": "string",
           "telefoonnummer": "string",
+          "whatsapp": "string",
+          "apparaattype": "string
           "categorie": "CV-Ketel | Warmtepomp",
           "afstel_protocol": {
             "titel": "string",
@@ -92,6 +95,7 @@ def extract_data_with_ai(pdf_file, api_key):
           "bedrijfstoestanden": [{"code": "string", "omschrijving": "string"}],
           "parameters": [{"nummer": "string", "omschrijving": "string", "fabriek": "string", "info": "string"}],
           "storingen": [{"code": "string", "omschrijving": "string", "oplossing": "string"}],
+          "onderdelen": [{"artikelnummer": "string", "omschrijving": "string"}],
           "gasblok_afbeelding": "string",
           "bediening_afbeelding": "string",
           "display_afbeelding": "string"
