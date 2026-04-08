@@ -25,7 +25,7 @@ def extract_data_with_ai(pdf_file, api_key):
             prompt = """
             Analyseer deze installatiehandleiding en extraheer de technische informatie exact in de volgende JSON structuur.
         Focus op: Merk, Model, Contactinformatie, Apparaattype (CV/WP/Hybride), Storingen, Afstel-protocol, Warmtepomp-specificaties, Testmodus, Bedrijfstoestanden/Statuscodes, afbeeldingen van componenten en de onderdelenlijst.
-        
+        Focus op: Merk, Model, Telefoonnummer, Whatsapp, Apparaattype (CV/WP/Hybride), Storingen, Afstel-protocol, Gas-specificaties, Warmtepomp-specificaties, Testmodus, Bedrijfstoestanden/Statuscodes, afbeeldingen van componenten, de onderdelenlijst en onderdelenkoffers.
         Belangrijk:
         - Bepaal het type apparaat: Als het een CV-ketel is, gebruik "CV-Ketel". Als het een warmtepomp of hybride systeem is, gebruik "Warmtepomp".
         - Zoek naar het telefoonnummer van de fabrikant. Geef prioriteit aan het professionele/technische servicenummer voor installateurs. Gebruik het algemene nummer alleen als er geen specifiek vaknummer wordt vermeld.
@@ -37,7 +37,8 @@ def extract_data_with_ai(pdf_file, api_key):
         - Controleer of het toestel beschikt over automatische kalibratie van het gasblok (bijv. elektronische gas-luchtkoppeling). Beschrijf dit kort indien aanwezig en hoe de automatsche calbratie te activeren.
         - Voor Warmtepompen en Hybride: Extraheer vermogen (kW), COP, SCOP, koudemiddel type (bijv. R32, R290) en geluidsvermogen.
         - Onderdelen: Als er een onderdelenlijst of lijst met reserveonderdelen aanwezig is, extraheer deze dan volledig met het artikelnummer en de omschrijving.
-        - Afbeeldingen: Identificeer waar afbeeldingen van het gasblok, de bediening (knoppen/knoppenpaneel) en het display zich bevinden. Geef een korte beschrijving of het paginanummer.
+        - Onderdelenkoffers: Extraheer ook een complete lijst van 'onderdelenkoffers' of 'servicekoffers'. Groepeer deze per 'keteltype' indien gespecificeerd. Voor elke koffer, extraheer de naam, een korte omschrijving (indien aanwezig) en de volledige inhoud met artikelnummer en omschrijving. Als een koffer niet specifiek aan een keteltype is gekoppeld, gebruik dan "Algemeen".
+        - Afbeeldingen: Identificeer waar afbeeldingen van het gasblok, de bediening (knoppen/knoppenpaneel) en het display zich bevinden. Geef een korte beschrijving of het paginanummer.        
         - Extraheer de volledige storingslijst en parameters met fabriekswaarden.
         
         Retourneer ALLEEN de JSON. Geen extra tekst of markdown.
@@ -48,7 +49,7 @@ def extract_data_with_ai(pdf_file, api_key):
           "model": "string",
           "telefoonnummer": "string",
           "whatsapp": "string",
-          "apparaattype": "string
+          "apparaattype": "string",
           "categorie": "CV-Ketel | Warmtepomp",
           "afstel_protocol": {
             "titel": "string",
@@ -61,6 +62,10 @@ def extract_data_with_ai(pdf_file, api_key):
             "gasblok_afbeelding": "string",
             "bediening_afbeelding": "string",
             "display_afbeelding": "string",
+            "instelling_uitleg": "string"
+            "afsluit_uitleg": "string"
+          },          
+          "gas_specificaties": {
             "gastype_data": [
               {
                 "naam": "string",
@@ -96,6 +101,20 @@ def extract_data_with_ai(pdf_file, api_key):
           "parameters": [{"nummer": "string", "omschrijving": "string", "fabriek": "string", "info": "string"}],
           "storingen": [{"code": "string", "omschrijving": "string", "oplossing": "string"}],
           "onderdelen": [{"artikelnummer": "string", "omschrijving": "string"}],
+          "onderdelenkoffers": [
+            {
+              "keteltype": "string",
+              "koffers": [
+                {
+                  "naam": "string",
+                  "omschrijving": "string",
+                  "inhoud": [
+                    {"artikelnummer": "string", "omschrijving": "string"}
+                  ]
+                }
+              ]
+            }
+          ],
           "gasblok_afbeelding": "string",
           "bediening_afbeelding": "string",
           "display_afbeelding": "string"
@@ -158,10 +177,20 @@ def main():
                     
                     # Download knop
                     json_str = json.dumps(result, indent=4, ensure_ascii=False)
-                    st.download_button(
+
+                    # Construct filename based on 'merk' and 'model' from the result
+                    merk = result.get("merk", "").replace(" ", "_").replace("/", "_")
+                    model = result.get("model", "").replace(" ", "_").replace("/", "_")
+
+                    if merk and model:
+                        download_filename = f"{merk}_{model}.json"
+                    else:
+                        download_filename = f"data_{uploaded_file.name.replace('.pdf', '')}.json"
+
+                    st.download_button( 
                         label="Download JSON Bestand",
-                        data=json_str,
-                        file_name=f"data_{uploaded_file.name.replace('.pdf', '')}.json",
+                        data=json_str, 
+                        file_name=download_filename,
                         mime="application/json"
                     )
 
